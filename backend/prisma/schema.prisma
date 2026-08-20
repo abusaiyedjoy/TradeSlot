@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Kept separate from Trader now so "multiple traders under one business"
+// (future scope) doesn't require a data model rewrite later.
+model Business {
+  id        String   @id @default(uuid())
+  name      String
+  traders   Trader[]
+  createdAt DateTime @default(now())
+}
+
+model Trader {
+  id              String     @id @default(uuid())
+  business        Business   @relation(fields: [businessId], references: [id])
+  businessId      String
+  name            String
+  email           String     @unique
+  stripeAccountId String? // Stripe Connect account id
+  workAreas       WorkArea[]
+  bookings        Booking[]
+  createdAt       DateTime   @default(now())
+}
+
+// One-off daily area — not a recurring weekly pattern (out of scope for MVP)
+model WorkArea {
+  id        String   @id @default(uuid())
+  trader    Trader   @relation(fields: [traderId], references: [id])
+  traderId  String
+  date      DateTime
+  areaLabel String // e.g. postcode / district name — simple text for MVP
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+enum BookingChannel {
+  WHATSAPP
+  WEBCHAT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id             String         @id @default(uuid())
+  trader         Trader         @relation(fields: [traderId], references: [id])
+  traderId       String
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  customerId     String
+  channel        BookingChannel
+  scheduledStart DateTime
+  scheduledEnd   DateTime // includes fixed travel-time buffer
+  status         BookingStatus  @default(PENDING)
+  flatFeeCents   Int
+  payment        Payment?
+  createdAt      DateTime       @default(now())
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  booking               Booking  @relation(fields: [bookingId], references: [id])
+  bookingId             String   @unique
+  stripePaymentIntentId String   @unique
+  amountCents           Int
+  applicationFeeCents   Int
+  status                String // succeeded, pending, failed — mirrors Stripe status
+  createdAt             DateTime @default(now())
+}
