@@ -1,0 +1,181 @@
+[
+  {
+    "id": "jordan-mitchell",
+    "name": "Jordan Mitchell",
+    "trade": "Electrician",
+    "specialty": "Licensed Electrician",
+    "experience": "12 years exp.",
+    "rating": 4.9,
+    "reviewCount": 124,
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+    "availabilityStatus": "AVAILABLE TODAY",
+    "isAvailableToday": true,
+    "isVerified": true,
+    "location": "Central London",
+    "locationDetailed": "Central London & North London",
+    "nextSlot": "14:00",
+    "shortDescription": "Expert residential rewiring and smart home installations with over 12 years of experienc...",
+    "fullBio": "Expert residential electrician specializing in complete home rewiring, smart home technology installation, and emergency fault finding. Proudly serving Central and North London with a focus on safety and reliability.",
+    "serviceHours": "Mon – Fri, 08:00 – 18:00",
+    "bookingFee": 25.0,
+    "availableSlots": ["09:00", "11:30", "14:00", "16:30"],
+    "services": [
+      {
+        "title": "Electrical repairs",
+        "description": "Fixing sockets, switches, and lighting fixtures quickly and safely."
+      },
+      {
+        "title": "Inspection",
+        "description": "Full safety inspections and EICR certificates for landlords and homeowners."
+      },
+      {
+        "title": "Installation",
+        "description": "Complete wiring for new builds or extensions, and EV charger installs."
+      },
+      {
+        "title": "Smart Home",
+        "description": "Installation of Nest/Ring doorbells, thermostats and smart lighting systems."
+      }
+    ]
+  },
+  {
+    "id": "sarah-chen",
+    "name": "Sarah Chen",
+    "trade": "Decorator",
+    "specialty": "Interior Decorator",
+    "experience": "8 years exp.",
+    "rating": 5.0,
+    "reviewCount": 98,
+    "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&auto=format&fit=crop&q=80",
+    "availabilityStatus": "AVAILABLE TOMORROW",
+    "isAvailableToday": false,
+    "isVerified": true,
+    "location": "North London",
+    "locationDetailed": "North London & East London",
+    "nextSlot": "Tomorrow 09:00",
+    "shortDescription": "Specializing in minimalist modern interiors and custom color consultations for residenti...",
+    "fullBio": "Dedicated interior decorator with an eye for detail, modern color palettes, and flawless finishes. Over 80 successful residential transformations completed.",
+    "serviceHours": "Mon – Sat, 09:00 – 17:00",
+    "bookingFee": 25.0,
+    "availableSlots": ["09:00", "11:00", "13:30", "15:30"],
+    "services": [
+      {
+        "title": "Interior Painting",
+        "description": "Premium wall, ceiling, and woodwork painting with ultra-clean tape lines."
+      },
+      {
+        "title": "Wallpapering",
+        "description": "Expert hanging of patterned, textured, and designer wallpapers."
+      },
+      {
+        "title": "Color Consultation",
+        "description": "Bespoke palette recommendations matching lighting and furniture."
+      },
+      {
+        "title": "Plaster & Patching",
+        "description": "Seamless wall repairs, skim coats, and pre-paint surface prep."
+      }
+    ]
+  },
+  {
+    "id": "marcus-thorne",
+    "name": "Marcus Thorne",
+    "trade": "Plumber",
+    "specialty": "Master Plumber",
+    "experience": "15 years exp.",
+    "rating": 4.8,
+    "reviewCount": 210,
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
+    "availabilityStatus": "AVAILABLE TODAY",
+    "isAvailableToday": true,
+    "isVerified": true,
+    "location": "Central London",
+    "locationDetailed": "Central & South London",
+    "nextSlot": "16:30",
+    "shortDescription": "24/7 emergency leak repairs, bathroom installations, and heating system maintenance...",
+    "fullBio": "Certified Gas Safe master plumber with 15+ years experience handling everything from rapid emergency leak mitigation to luxury bathroom overhauls.",
+    "serviceHours": "24/7 Emergency & Daily 08:00 – 20:00",
+    "bookingFee": 25.0,
+    "availableSlots": ["10:00", "12:30", "14:30", "16:30"],
+    "services": [
+      {
+        "title": "Leak Detection & Repair",
+        "description": "Rapid response pipe repair, burst pipe isolation, and joint sealing."
+      },
+      {
+        "title": "Boiler Servicing",
+        "description": "Annual Gas Safe inspections, pressure checks, and radiator bleeding."
+      },
+      {
+        "title": "Bathroom Fitting",
+        "description": "Complete plumbing installations for showers, baths, and vanity units."
+      },
+      {
+        "title": "Drain Clearance",
+        "description": "High pressure unblocking and CCTV drain survey inspections."
+      }
+    ]
+  },
+  {
+    "id": "david-kovac",
+    "name": "David Kovac",
+    "trade": "HVAC",
+    "specialty": "Heating & AC Specialist",
+    "experience": "10 years exp.",
+    "rating": 4.9,
+    "reviewCount": 87,
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
+    "availabilityStatus": "AVAILABLE TODAY",
+    "isAvailableToday": true,
+    "isVerified": true,
+    "location": "West London",
+    "locationDetailed": "West & Central London",
+    "nextSlot": "13:00",
+    "shortDescription": "Certified climate systems technician handling heat pumps, air conditioning, and ventilation...",
+    "fullBio": "Specialist in residential heat pumps, smart HVAC control systems, and ductless split unit installations.",
+    "serviceHours": "Mon – Fri, 08:00 – 18:00",
+    "bookingFee": 25.0,
+    "availableSlots": ["11:00", "13:00", "15:00", "17:00"],
+    "services": [
+      {
+        "title": "AC Maintenance",
+        "description": "Filter cleaning, gas recharge, and efficiency diagnostics."
+      },
+      {
+        "title": "Heat Pump Install",
+        "description": "Eco-friendly air source heat pump fitting and calibration."
+      }
+    ]
+  },
+  {
+    "id": "tom-bradley",
+    "name": "Tom Bradley",
+    "trade": "Handyman",
+    "specialty": "Multi-Trade Handyman",
+    "experience": "9 years exp.",
+    "rating": 4.7,
+    "reviewCount": 156,
+    "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80",
+    "availabilityStatus": "AVAILABLE TODAY",
+    "isAvailableToday": true,
+    "isVerified": true,
+    "location": "South London",
+    "locationDetailed": "South & Central London",
+    "nextSlot": "15:00",
+    "shortDescription": "Fast, reliable household repairs, TV mounting, furniture assembly, and carpentry adjustments...",
+    "fullBio": "Friendly and fully equipped handyman for all those jobs around the home that need an expert touch and the right tools.",
+    "serviceHours": "Mon – Sat, 08:30 – 19:00",
+    "bookingFee": 25.0,
+    "availableSlots": ["09:30", "12:00", "15:00", "17:30"],
+    "services": [
+      {
+        "title": "TV Mounting & Shelving",
+        "description": "Heavy-duty wall anchors into brick or plasterboard with cable hiding."
+      },
+      {
+        "title": "Door & Lock Repairs",
+        "description": "Hinge adjustments, lock cylinder replacements, and latch fixes."
+      }
+    ]
+  }
+]
