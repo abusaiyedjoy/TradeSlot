@@ -12,6 +12,7 @@ function required(key: string): string {
 export const env = {
   port: process.env.PORT ?? "4000",
   databaseUrl: required("DATABASE_URL"),
+  jwtSecret: required("JWT_SECRET"),
   stripeSecretKey: required("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: required("STRIPE_WEBHOOK_SECRET"),
   whatsappApiToken: process.env.WHATSAPP_API_TOKEN ?? "",

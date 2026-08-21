@@ -22,7 +22,8 @@ model Trader {
   businessId      String
   name            String
   email           String     @unique
-  stripeAccountId String? // Stripe Connect account id
+  passwordHash    String
+  stripeAccountId String?
   workAreas       WorkArea[]
   bookings        Booking[]
   createdAt       DateTime   @default(now())
