@@ -8,10 +8,30 @@ export const apiClient = axios.create({
   },
 });
 
+// ── Request interceptor — attach JWT token if present ────────────────────────
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("tradeslot_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ── Response interceptor — normalize errors ────────────────────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Centralized error normalization — extend as auth/session is added
+    if (error?.response?.status === 401 && typeof window !== "undefined") {
+      // Token expired or invalid — clear storage and redirect to login
+      localStorage.removeItem("tradeslot_token");
+      localStorage.removeItem("tradeslot_trader");
+      window.location.href = "/login";
+    }
     const message =
       error?.response?.data?.message ?? error.message ?? "Unknown API error";
     return Promise.reject(new Error(message));
