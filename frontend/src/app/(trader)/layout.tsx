@@ -10,7 +10,6 @@ import {
   MapPin,
   CreditCard,
   LogOut,
-  Bell,
   Menu,
   X,
   ExternalLink,
@@ -69,63 +68,63 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex font-sans antialiased text-slate-100">
+    <div className="min-h-screen bg-slate-50 flex font-sans antialiased text-slate-900">
       {/* Mobile Drawer Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation (Clean White Theme) */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div>
           {/* Brand Logo Header */}
-          <div className="h-16 px-6 flex items-center justify-between border-b border-slate-800">
+          <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100">
             <Link href="/dashboard" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
                 <Wrench className="w-4 h-4" />
               </div>
-              <span className="font-bold text-lg text-white font-outfit">
+              <span className="font-bold text-lg text-slate-900 font-outfit">
                 Trade<span className="text-orange-500">Slot</span>
               </span>
             </Link>
             <button
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-white p-1"
+              className="lg:hidden text-slate-400 hover:text-slate-700 p-1"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Trader Quick Profile */}
-          <div className="p-4 mx-3 my-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+          {/* Trader Profile Card */}
+          <div className="p-4 mx-3 my-3 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 font-bold text-sm flex items-center justify-center font-outfit shadow-sm">
                 {trader.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-white truncate">{trader.name}</p>
-                <p className="text-xs text-slate-400 truncate">{trader.businessName}</p>
+                <p className="text-xs font-bold text-slate-900 truncate font-outfit">{trader.name}</p>
+                <p className="text-[11px] text-slate-500 truncate">{trader.businessName}</p>
               </div>
             </div>
-            <div className="mt-2.5 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Stripe Connect</span>
+            <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 font-medium">Stripe Status:</span>
               {trader.onboardingComplete ? (
-                <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-                  <CheckCircle2 className="w-3 h-3" /> Active
+                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Connected
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-amber-400 font-medium">
-                  <AlertTriangle className="w-3 h-3" /> Incomplete
+                <span className="inline-flex items-center gap-1 text-amber-700 font-semibold">
+                  <AlertTriangle className="w-3 h-3 text-amber-600" /> Incomplete
                 </span>
               )}
             </div>
@@ -144,22 +143,22 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-sm"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                      ? "bg-orange-50 text-orange-700 border border-orange-200 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
                       className={`w-4 h-4 transition-colors ${
-                        isActive ? "text-orange-400" : "text-slate-400 group-hover:text-slate-200"
+                        isActive ? "text-orange-600" : "text-slate-400"
                       }`}
                     />
                     <span>{item.title}</span>
                   </div>
                   {item.badgeText && (
-                    <Badge variant="outline" className="text-[10px] bg-orange-500/10 text-orange-400 border-orange-500/20">
+                    <Badge variant="outline" className="text-[10px] bg-orange-100 text-orange-700 border-orange-200">
                       {item.badgeText}
                     </Badge>
                   )}
@@ -170,19 +169,20 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-slate-800/80 space-y-1">
+        <div className="p-3 border-t border-slate-100 space-y-1">
           <Link
             href="/"
             target="_blank"
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-colors"
+            className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Customer Booking Page</span>
+            <span>Customer Booking Site</span>
           </Link>
 
           <button
+            type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -190,35 +190,36 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-slate-950">
+      {/* Main Content Container */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-slate-50">
         {/* Top Navbar */}
-        <header className="h-16 px-4 md:px-8 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/80 backdrop-blur-md sticky top-0 z-30">
+        <header className="h-16 px-4 md:px-8 border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">
-                Trader Portal
+              <span className="text-xs font-bold text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+                Trader Management Portal
               </span>
-              <span className="text-xs text-slate-500 hidden sm:inline">• Automated Scheduling & Payouts</span>
+              <span className="text-xs text-slate-400 hidden sm:inline">• Automated Scheduling & Escrow Payouts</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link href="/work-area">
-              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white font-medium text-xs rounded-lg shadow-sm shadow-orange-500/20 gap-1.5 hidden sm:flex">
-                <MapPin className="w-3.5 h-3.5" /> Set Today&apos;s Work Area
+              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs rounded-xl shadow-sm shadow-orange-500/20 gap-1.5 hidden sm:flex">
+                <MapPin className="w-3.5 h-3.5" /> Set Daily Zone
               </Button>
             </Link>
           </div>
         </header>
 
-        {/* Page Inner Content */}
+        {/* Page Main Content */}
         <main className="p-4 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
       </div>
     </div>

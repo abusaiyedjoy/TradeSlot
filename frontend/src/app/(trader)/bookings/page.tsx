@@ -81,48 +81,49 @@ export default function BookingsListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white font-outfit tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 font-outfit tracking-tight">
             Bookings & Channel Intake
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Normalized stream of all customer appointments from WhatsApp and Webchat.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="border-orange-500/20 text-orange-400 bg-orange-500/10 px-3 py-1 text-xs">
+          <Badge className="border-orange-200 text-orange-700 bg-orange-50 px-3 py-1 text-xs font-semibold">
             {bookings.length} Total Bookings
           </Badge>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by customer name, phone, or email..."
-            className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500"
+            className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 pl-10 text-xs h-10 rounded-xl focus-visible:ring-orange-500"
           />
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         </div>
 
         {/* Status Filters */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-500 flex items-center gap-1 mr-1">
+          <span className="text-xs text-slate-400 flex items-center gap-1 mr-1 font-medium">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
 
           {["ALL", "CONFIRMED", "PENDING", "COMPLETED", "CANCELLED"].map((st) => (
             <button
               key={st}
+              type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 statusFilter === st
-                  ? "bg-orange-500 text-white shadow-sm"
-                  : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+                  ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20"
+                  : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200"
               }`}
             >
               {st}
@@ -133,7 +134,7 @@ export default function BookingsListPage() {
           <select
             value={channelFilter}
             onChange={(e) => setChannelFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium"
           >
             <option value="ALL">All Channels</option>
             <option value="WHATSAPP">WhatsApp</option>
@@ -143,11 +144,11 @@ export default function BookingsListPage() {
       </div>
 
       {/* Bookings Table */}
-      <div className="rounded-2xl bg-slate-900/80 border border-slate-800 overflow-hidden shadow-lg">
+      <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/40 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 pl-6">Customer</th>
                 <th className="py-3.5 px-4">Channel</th>
                 <th className="py-3.5 px-4">Scheduled Slot (with Buffer)</th>
@@ -156,20 +157,20 @@ export default function BookingsListPage() {
                 <th className="py-3.5 pr-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-sm">
+            <tbody className="divide-y divide-slate-100 text-sm">
               {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
                     No bookings found matching your search and filter criteria.
                   </td>
                 </tr>
               ) : (
                 filteredBookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-800/30 transition-colors">
+                  <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                     {/* Customer */}
                     <td className="py-4 pl-6">
-                      <div className="font-semibold text-white">{b.customer.name}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">
+                      <div className="font-bold text-slate-900 text-xs font-outfit">{b.customer.name}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
                         {b.customer.phone || b.customer.email || "Direct Booking"}
                       </div>
                     </td>
@@ -178,10 +179,10 @@ export default function BookingsListPage() {
                     <td className="py-4 px-4">
                       <Badge
                         variant="outline"
-                        className={`text-xs font-semibold ${
+                        className={`text-[10px] font-bold ${
                           b.channel === "WHATSAPP"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
                         }`}
                       >
                         {b.channel}
@@ -190,7 +191,7 @@ export default function BookingsListPage() {
 
                     {/* Scheduled Slot with Travel Buffer */}
                     <td className="py-4 px-4">
-                      <div className="font-medium text-slate-200">
+                      <div className="font-semibold text-slate-800 text-xs">
                         {new Date(b.scheduledStart).toLocaleDateString("en-GB", {
                           weekday: "short",
                           day: "numeric",
@@ -203,28 +204,28 @@ export default function BookingsListPage() {
                         })}
                       </div>
                       <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                        <Car className="w-3 h-3 text-blue-400" />
+                        <Car className="w-3 h-3 text-blue-500" />
                         <span>Buffer until {new Date(b.scheduledEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                       </div>
                     </td>
 
                     {/* Flat Booking Fee */}
                     <td className="py-4 px-4">
-                      <span className="font-bold text-white">£{(b.flatFeeCents / 100).toFixed(2)}</span>
-                      <span className="text-[10px] text-slate-500 block">platform fee</span>
+                      <span className="font-bold text-slate-900 text-xs">£{(b.flatFeeCents / 100).toFixed(2)}</span>
+                      <span className="text-[10px] text-slate-400 block">platform fee</span>
                     </td>
 
                     {/* Status */}
                     <td className="py-4 px-4">
                       <Badge
-                        className={`text-xs font-medium ${
+                        className={`text-[10px] font-bold ${
                           b.status === "CONFIRMED"
-                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
                             : b.status === "PENDING"
-                            ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                            ? "bg-amber-100 text-amber-700 border-amber-200"
                             : b.status === "COMPLETED"
-                            ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                            : "bg-red-500/20 text-red-400 border-red-500/30"
+                            ? "bg-blue-100 text-blue-700 border-blue-200"
+                            : "bg-red-100 text-red-700 border-red-200"
                         }`}
                       >
                         {b.status}
@@ -239,7 +240,7 @@ export default function BookingsListPage() {
                             size="sm"
                             disabled={actionLoading === b.id}
                             onClick={() => handleConfirm(b.id)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-7 px-2.5 rounded-lg"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8 px-3 rounded-lg shadow-sm"
                           >
                             Confirm
                           </Button>
@@ -250,7 +251,7 @@ export default function BookingsListPage() {
                             variant="ghost"
                             disabled={actionLoading === b.id}
                             onClick={() => handleCancel(b.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs h-7 px-2"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-semibold h-8 px-2.5 rounded-lg"
                           >
                             Cancel
                           </Button>
@@ -259,7 +260,7 @@ export default function BookingsListPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-slate-700 text-slate-300 hover:text-white text-xs h-7 px-2.5 rounded-lg"
+                            className="border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold h-8 px-2.5 rounded-lg"
                           >
                             Details <ChevronRight className="w-3 h-3 ml-0.5" />
                           </Button>
