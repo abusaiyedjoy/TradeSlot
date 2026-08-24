@@ -28,8 +28,8 @@ import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { bookingService } from "@/services/booking.service";
+import { traderService, PublicTraderRecord } from "@/services/trader.service";
 import { MOCK_TRADERS, MockTrader } from "@/features/trader/traders-mock";
-import { MOCK_TRADER } from "@/lib/mock-data";
 
 const TIME_SLOTS = [
   "08:30", "10:00", "11:30", "13:30", "15:00", "16:30"
@@ -41,16 +41,54 @@ function CustomerBookContent() {
   const preSelectedTraderId = searchParams.get("traderId");
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [selectedTrader, setSelectedTrader] = useState<MockTrader>(
-    MOCK_TRADERS.find((t) => t.id === preSelectedTraderId) || MOCK_TRADERS[0]
-  );
-  const [date, setDate] = useState("2026-08-24");
+  const [tradersList, setTradersList] = useState<MockTrader[]>(MOCK_TRADERS);
+  const [selectedTrader, setSelectedTrader] = useState<MockTrader>(MOCK_TRADERS[0]);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("10:00");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadPublicTraders() {
+      try {
+        const publicTraders = await traderService.listPublicTraders();
+        if (publicTraders && publicTraders.length > 0) {
+          // Merge real registered traders from database with visual directory metadata
+          const merged: MockTrader[] = publicTraders.map((pt: PublicTraderRecord, idx: number) => {
+            const fallback = MOCK_TRADERS[idx % MOCK_TRADERS.length];
+            return {
+              id: pt.id,
+              name: pt.name,
+              category: fallback.category || "Plumber",
+              rating: fallback.rating || 4.9,
+              reviewsCount: fallback.reviewsCount || 120,
+              hourlyRate: fallback.hourlyRate || 65,
+              avatar: fallback.avatar,
+              verified: true,
+              workAreas: pt.workAreas?.map(w => w.areaLabel) || fallback.workAreas,
+              skills: fallback.skills,
+              bio: fallback.bio,
+            };
+          });
+          setTradersList(merged);
+
+          if (preSelectedTraderId) {
+            const found = merged.find(t => t.id === preSelectedTraderId);
+            if (found) setSelectedTrader(found);
+            else setSelectedTrader(merged[0]);
+          } else {
+            setSelectedTrader(merged[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading public traders:", err);
+      }
+    }
+    loadPublicTraders();
+  }, [preSelectedTraderId]);
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +103,7 @@ function CustomerBookContent() {
     try {
       const requestedStart = new Date(`${date}T${time}:00.000Z`).toISOString();
       const booking = await bookingService.create({
-        traderId: selectedTrader.id || MOCK_TRADER.id,
+        traderId: selectedTrader.id,
         customerName,
         customerPhone,
         customerEmail,
@@ -114,7 +152,7 @@ function CustomerBookContent() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {MOCK_TRADERS.map((t) => (
+            {tradersList.map((t) => (
               <div
                 key={t.id}
                 onClick={() => setSelectedTrader(t)}

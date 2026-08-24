@@ -18,24 +18,32 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { bookingService } from "@/services/booking.service";
-import { traderService } from "@/services/trader.service";
-import { MOCK_TRADER, MockBooking, MockWorkArea, MOCK_DASHBOARD_STATS } from "@/lib/mock-data";
+import { bookingService, BookingRecord } from "@/services/booking.service";
+import { traderService, WorkAreaRecord } from "@/services/trader.service";
+import { authService } from "@/services/auth.service";
 
 export default function TraderDashboardPage() {
-  const [bookings, setBookings] = useState<MockBooking[]>([]);
-  const [workAreas, setWorkAreas] = useState<MockWorkArea[]>([]);
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [workAreas, setWorkAreas] = useState<WorkAreaRecord[]>([]);
+  const [traderName, setTraderName] = useState("Alex Carter");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
+        const stored = authService.getStoredTrader();
+        if (stored?.name) {
+          setTraderName(stored.name);
+        }
+
         const [bList, waList] = await Promise.all([
           bookingService.listForTrader(),
           traderService.listWorkAreas(),
         ]);
-        setBookings(bList);
-        setWorkAreas(waList);
+        setBookings(bList || []);
+        setWorkAreas(waList || []);
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
       } finally {
         setLoading(false);
       }
@@ -44,11 +52,17 @@ export default function TraderDashboardPage() {
   }, []);
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  const todayWorkArea = workAreas.find((w) => w.date === todayStr) || workAreas[0];
+  const todayWorkArea =
+    workAreas.find((w) => w.date.slice(0, 10) === todayStr) || workAreas[0];
   const upcomingBooking = bookings.find((b) => b.status === "CONFIRMED");
 
   const whatsappCount = bookings.filter((b) => b.channel === "WHATSAPP").length;
   const webchatCount = bookings.filter((b) => b.channel === "WEBCHAT").length;
+  const confirmedCount = bookings.filter((b) => b.status === "CONFIRMED").length;
+  const pendingCount = bookings.filter((b) => b.status === "PENDING").length;
+
+  // Calculate net payouts (£50 per completed or confirmed booking)
+  const netRevenue = (confirmedCount + bookings.filter((b) => b.status === "COMPLETED").length) * 50;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -60,7 +74,7 @@ export default function TraderDashboardPage() {
               <Sparkles className="w-3.5 h-3.5 text-orange-600" /> Trader Hub Overview
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 font-outfit tracking-tight">
-              Good morning, {MOCK_TRADER.name}
+              Good morning, {traderName}
             </h1>
             <p className="text-sm text-slate-600 max-w-xl leading-relaxed">
               Your multi-channel engine is actively routing WhatsApp and webchat customer appointments with protected 30-minute travel buffers.
@@ -89,7 +103,7 @@ export default function TraderDashboardPage() {
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>
               Active Work Area for Today:{" "}
-              <strong className="text-slate-900 font-bold">{todayWorkArea.areaLabel}</strong> ({todayWorkArea.date})
+              <strong className="text-slate-900 font-bold">{todayWorkArea.areaLabel}</strong> ({new Date(todayWorkArea.date).toLocaleDateString()})
             </span>
           </div>
         )}
@@ -110,7 +124,7 @@ export default function TraderDashboardPage() {
               {bookings.length}
             </span>
             <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" /> +20% this week
+              <TrendingUp className="w-3.5 h-3.5" /> Live Data
             </span>
           </div>
         </div>
@@ -125,7 +139,7 @@ export default function TraderDashboardPage() {
           </div>
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-3xl font-extrabold text-slate-900 font-outfit">
-              {bookings.filter((b) => b.status === "CONFIRMED").length}
+              {confirmedCount}
             </span>
             <span className="text-xs text-slate-400">Buffered & Locked</span>
           </div>
@@ -141,7 +155,7 @@ export default function TraderDashboardPage() {
           </div>
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-3xl font-extrabold text-slate-900 font-outfit">
-              {bookings.filter((b) => b.status === "PENDING").length}
+              {pendingCount}
             </span>
             <span className="text-xs text-amber-600 font-semibold">Requires action</span>
           </div>
@@ -157,7 +171,7 @@ export default function TraderDashboardPage() {
           </div>
           <div className="mt-4 flex items-baseline justify-between">
             <span className="text-3xl font-extrabold text-slate-900 font-outfit">
-              £{(MOCK_DASHBOARD_STATS.netRevenueCents / 100).toFixed(2)}
+              £{netRevenue.toFixed(2)}
             </span>
             <span className="text-[11px] text-slate-400">Direct via Stripe</span>
           </div>

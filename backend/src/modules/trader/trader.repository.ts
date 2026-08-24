@@ -25,6 +25,21 @@ export const traderRepository = {
         return prisma.trader.findUnique({ where: { id } });
     },
 
+    async listPublic() {
+        return prisma.trader.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                stripeAccountId: true,
+                business: { select: { id: true, name: true } },
+                workAreas: { select: { date: true, areaLabel: true }, orderBy: { date: "asc" } },
+                createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    },
+
     async setStripeAccountId(traderId: string, stripeAccountId: string) {
         return prisma.trader.update({
             where: { id: traderId },

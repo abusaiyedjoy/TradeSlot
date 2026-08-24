@@ -28,4 +28,15 @@ export const workAreaService = {
         const day = startOfDay(new Date(date));
         return prisma.workArea.findFirst({ where: { traderId, date: day } });
     },
+
+    /**
+     * List all work areas for a trader, ordered by date ascending.
+     * Used by the frontend dashboard + work-area management page.
+     */
+    async listWorkAreas(traderId: string) {
+        return prisma.workArea.findMany({
+            where: { traderId },
+            orderBy: { date: "asc" },
+        });
+    },
 };

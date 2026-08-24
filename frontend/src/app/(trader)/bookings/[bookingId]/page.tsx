@@ -21,14 +21,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { bookingService } from "@/services/booking.service";
-import { MockBooking } from "@/lib/mock-data";
+import { bookingService, BookingRecord } from "@/services/booking.service";
 
 export default function BookingDetailPage() {
   const params = useParams();
   const bookingId = params.bookingId as string;
 
-  const [booking, setBooking] = useState<MockBooking | null>(null);
+  const [booking, setBooking] = useState<BookingRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -38,7 +37,7 @@ export default function BookingDetailPage() {
         const data = await bookingService.getById(bookingId);
         setBooking(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error loading booking details:", err);
       } finally {
         setLoading(false);
       }
@@ -52,6 +51,8 @@ export default function BookingDetailPage() {
     try {
       const updated = await bookingService.confirm(booking.id);
       setBooking(updated);
+    } catch (err) {
+      console.error("Error confirming booking:", err);
     } finally {
       setActionLoading(false);
     }
@@ -63,6 +64,8 @@ export default function BookingDetailPage() {
     try {
       const updated = await bookingService.cancel(booking.id);
       setBooking(updated);
+    } catch (err) {
+      console.error("Error cancelling booking:", err);
     } finally {
       setActionLoading(false);
     }

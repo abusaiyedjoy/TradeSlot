@@ -8,3 +8,4 @@ coverage
 
 uploads/*
 !uploads/.gitkeep
+.vercel

@@ -10,15 +10,28 @@ export function createApp() {
   const app = express();
 
   // ── CORS ─────────────────────────────────────────────────────────────────
-  app.use(cors({ origin: env.corsOrigin }));
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          env.corsOrigin === "*" ||
+          origin === env.corsOrigin ||
+          origin.endsWith(".vercel.app") ||
+          origin.includes("localhost")
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
+      credentials: true,
+    })
+  );
 
   // ── Request logging ───────────────────────────────────────────────────────
   app.use(requestLogger);
 
   // ── Stripe webhook (MUST come before express.json) ───────────────────────
-  // Stripe signature verification requires the RAW request body.
-  // We isolate it at /api/webhooks/stripe so the remaining routes can use
-  // express.json() without interference.
   app.use(
     "/api/webhooks",
     express.raw({ type: "application/json" }),
@@ -30,6 +43,16 @@ export function createApp() {
 
   // ── API routes ───────────────────────────────────────────────────────────
   app.use("/api", routes);
+
+  // ── Root route for Vercel / health ───────────────────────────────────────
+  app.get("/", (_req, res) => {
+    res.json({
+      name: "TradeSlot API",
+      status: "active",
+      healthUrl: "/api/health",
+      version: "0.1.0",
+    });
+  });
 
   // ── Global error handler ─────────────────────────────────────────────────
   app.use(errorHandler);

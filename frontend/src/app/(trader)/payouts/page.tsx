@@ -15,30 +15,33 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { paymentsService } from "@/services/payments.service";
+import { paymentsService, PayoutSummary } from "@/services/payments.service";
 import { traderService } from "@/services/trader.service";
-import { MOCK_TRADER, MockPayoutSummary } from "@/lib/mock-data";
 
 export default function PayoutsPage() {
   const [stripeStatus, setStripeStatus] = useState<{
     stripeAccountId: string | null;
     onboardingComplete: boolean;
   }>({
-    stripeAccountId: MOCK_TRADER.stripeAccountId,
-    onboardingComplete: MOCK_TRADER.onboardingComplete,
+    stripeAccountId: null,
+    onboardingComplete: false,
   });
-  const [payouts, setPayouts] = useState<MockPayoutSummary[]>([]);
+  const [payouts, setPayouts] = useState<PayoutSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [onboardLoading, setOnboardLoading] = useState(false);
 
   useEffect(() => {
     async function loadData() {
-      const [status, pList] = await Promise.all([
-        traderService.getStripeStatus(),
-        paymentsService.getPayoutSummary(),
-      ]);
-      setStripeStatus(status);
-      setPayouts(pList);
+      try {
+        const [status, pList] = await Promise.all([
+          traderService.getStripeStatus(),
+          paymentsService.getPayoutSummary(),
+        ]);
+        setStripeStatus(status || { stripeAccountId: null, onboardingComplete: false });
+        setPayouts(pList || []);
+      } catch (err) {
+        console.error("Error loading payouts data:", err);
+      }
     }
     loadData();
   }, []);
@@ -50,6 +53,8 @@ export default function PayoutsPage() {
       if (res.url) {
         window.open(res.url, "_blank");
       }
+    } catch (err) {
+      console.error("Error starting onboarding:", err);
     } finally {
       setOnboardLoading(false);
     }
@@ -88,7 +93,7 @@ export default function PayoutsPage() {
             </div>
 
             <p className="text-xs text-slate-600">
-              Account ID: <code className="bg-slate-100 px-2 py-0.5 rounded text-orange-600 font-mono text-xs">{stripeStatus.stripeAccountId || "Not created"}</code>
+              Account ID: <code className="bg-slate-100 px-2 py-0.5 rounded text-orange-600 font-mono text-xs">{stripeStatus.stripeAccountId || "Not created yet"}</code>
             </p>
             <p className="text-xs text-slate-500">
               Payouts are transferred directly to your bank account with automatic flat £5.00 platform fee deduction.
@@ -105,7 +110,7 @@ export default function PayoutsPage() {
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <ExternalLink className="w-4 h-4" /> Manage in Stripe Dashboard
+                  <ExternalLink className="w-4 h-4" /> Connect Stripe Account
                 </>
               )}
             </Button>

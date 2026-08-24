@@ -1,10 +1,8 @@
 /**
  * auth.service.ts
- * Handles trader registration and login.
- * Mock data is active — swap the commented API calls when backend is connected.
+ * Handles trader registration and login via the TradeSlot backend API.
  */
 import { apiClient } from "@/lib/api-client";
-import { MOCK_TRADER } from "@/lib/mock-data";
 
 export interface RegisterPayload {
   name: string;
@@ -30,46 +28,25 @@ export interface AuthResponse {
   token: string;
 }
 
-const MOCK_TOKEN = "mock-jwt-token-tradeslot-dev";
-
 export const authService = {
   async register(payload: RegisterPayload): Promise<AuthResponse> {
-    // ── MOCK (remove when backend connected) ──────────────────────────────
-    await new Promise((r) => setTimeout(r, 800));
-    const fakeAuth: AuthResponse = {
-      trader: { ...MOCK_TRADER, businessName: payload.businessName },
-      token: MOCK_TOKEN,
-    };
+    const { data } = await apiClient.post("/auth/register", payload);
+    const result: AuthResponse = data.data;
     if (typeof window !== "undefined") {
-      localStorage.setItem("tradeslot_token", MOCK_TOKEN);
-      localStorage.setItem("tradeslot_trader", JSON.stringify(fakeAuth.trader));
+      localStorage.setItem("tradeslot_token", result.token);
+      localStorage.setItem("tradeslot_trader", JSON.stringify(result.trader));
     }
-    return fakeAuth;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.post("/auth/register", payload);
-    // if (typeof window !== "undefined") {
-    //   localStorage.setItem("tradeslot_token", data.data.token);
-    //   localStorage.setItem("tradeslot_trader", JSON.stringify(data.data.trader));
-    // }
-    // return data.data;
+    return result;
   },
 
   async login(payload: LoginPayload): Promise<AuthResponse> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 700));
-    const fakeAuth: AuthResponse = { trader: MOCK_TRADER, token: MOCK_TOKEN };
+    const { data } = await apiClient.post("/auth/login", payload);
+    const result: AuthResponse = data.data;
     if (typeof window !== "undefined") {
-      localStorage.setItem("tradeslot_token", MOCK_TOKEN);
-      localStorage.setItem("tradeslot_trader", JSON.stringify(fakeAuth.trader));
+      localStorage.setItem("tradeslot_token", result.token);
+      localStorage.setItem("tradeslot_trader", JSON.stringify(result.trader));
     }
-    return fakeAuth;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.post("/auth/login", payload);
-    // if (typeof window !== "undefined") {
-    //   localStorage.setItem("tradeslot_token", data.data.token);
-    //   localStorage.setItem("tradeslot_trader", JSON.stringify(data.data.trader));
-    // }
-    // return data.data;
+    return result;
   },
 
   logout() {

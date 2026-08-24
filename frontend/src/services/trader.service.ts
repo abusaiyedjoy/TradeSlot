@@ -1,60 +1,77 @@
 /**
  * trader.service.ts
- * Trader profile, Stripe status, and work area management.
+ * Trader profile, Stripe status, and work area management via the backend API.
  */
 import { apiClient } from "@/lib/api-client";
-import { MOCK_TRADER, MOCK_WORK_AREAS, MockTrader, MockWorkArea } from "@/lib/mock-data";
+
+export interface TraderProfile {
+  id: string;
+  name: string;
+  email: string;
+  businessId: string;
+  stripeAccountId: string | null;
+  createdAt: string;
+}
+
+export interface PublicTraderRecord {
+  id: string;
+  name: string;
+  email: string;
+  stripeAccountId: string | null;
+  business?: { id: string; name: string };
+  workAreas?: { date: string; areaLabel: string }[];
+}
+
+export interface WorkAreaRecord {
+  id: string;
+  traderId: string;
+  date: string;
+  areaLabel: string;
+  createdAt: string;
+}
 
 export const traderService = {
-  async getProfile(): Promise<MockTrader> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 300));
-    return MOCK_TRADER;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.get("/traders/me");
-    // return data.data;
+  /** GET /api/traders/me — Authenticated trader profile */
+  async getProfile(): Promise<TraderProfile> {
+    const { data } = await apiClient.get("/traders/me");
+    return data.data;
   },
 
+  /** GET /api/traders/public — Public list of registered traders */
+  async listPublicTraders(): Promise<PublicTraderRecord[]> {
+    try {
+      const { data } = await apiClient.get("/traders/public");
+      return data.data || [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** GET /api/traders/stripe-status — Stripe Connect onboarding status */
   async getStripeStatus(): Promise<{ stripeAccountId: string | null; onboardingComplete: boolean }> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 300));
-    return {
-      stripeAccountId: MOCK_TRADER.stripeAccountId,
-      onboardingComplete: MOCK_TRADER.onboardingComplete,
-    };
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.get("/traders/stripe-status");
-    // return data.data;
+    const { data } = await apiClient.get("/traders/stripe-status");
+    return data.data;
   },
 
-  async setWorkArea(date: string, areaLabel: string): Promise<MockWorkArea> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 500));
-    return {
-      id: `wa-${Date.now()}`,
-      traderId: MOCK_TRADER.id,
-      date,
-      areaLabel,
-      createdAt: new Date().toISOString(),
-    };
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.post("/traders/work-area", { date, areaLabel });
-    // return data.data;
+  /** POST /api/traders/work-area — Set or update the work area for a date */
+  async setWorkArea(date: string, areaLabel: string): Promise<WorkAreaRecord> {
+    const { data } = await apiClient.post("/traders/work-area", { date, areaLabel });
+    return data.data;
   },
 
-  async getWorkArea(date: string): Promise<MockWorkArea | null> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 300));
-    return MOCK_WORK_AREAS.find((w) => w.date === date) ?? null;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.get(`/traders/work-area?date=${date}`);
-    // return data.data;
+  /** GET /api/traders/work-area?date=YYYY-MM-DD — Get work area for a specific date */
+  async getWorkArea(date: string): Promise<WorkAreaRecord | null> {
+    try {
+      const { data } = await apiClient.get(`/traders/work-area?date=${date}`);
+      return data.data ?? null;
+    } catch {
+      return null;
+    }
   },
 
-  async listWorkAreas(): Promise<MockWorkArea[]> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 300));
-    return MOCK_WORK_AREAS;
-    // ── TODO: No direct backend equivalent yet — query by date range when added ──
+  /** GET /api/traders/work-areas — List all configured work areas for the trader */
+  async listWorkAreas(): Promise<WorkAreaRecord[]> {
+    const { data } = await apiClient.get("/traders/work-areas");
+    return data.data;
   },
 };

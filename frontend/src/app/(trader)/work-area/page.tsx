@@ -17,8 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { traderService } from "@/services/trader.service";
-import { MockWorkArea, MOCK_WORK_AREAS } from "@/lib/mock-data";
+import { traderService, WorkAreaRecord } from "@/services/trader.service";
 
 const PRESET_AREAS = [
   "Central London (Westminster / Soho / City)",
@@ -32,14 +31,18 @@ const PRESET_AREAS = [
 export default function WorkAreaPage() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [areaLabel, setAreaLabel] = useState("");
-  const [savedAreas, setSavedAreas] = useState<MockWorkArea[]>([]);
+  const [savedAreas, setSavedAreas] = useState<WorkAreaRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAreas() {
-      const areas = await traderService.listWorkAreas();
-      setSavedAreas(areas);
+      try {
+        const areas = await traderService.listWorkAreas();
+        setSavedAreas(areas || []);
+      } catch (err) {
+        console.error("Error loading work areas:", err);
+      }
     }
     loadAreas();
   }, []);
@@ -54,10 +57,12 @@ export default function WorkAreaPage() {
     try {
       const newArea = await traderService.setWorkArea(date, areaLabel);
       setSavedAreas((prev) => {
-        const filtered = prev.filter((a) => a.date !== date);
+        const filtered = prev.filter((a) => a.date.slice(0, 10) !== date.slice(0, 10));
         return [...filtered, newArea].sort((a, b) => a.date.localeCompare(b.date));
       });
       setSuccessMsg(`Work area for ${date} successfully set to "${areaLabel}"!`);
+    } catch (err: any) {
+      console.error("Error setting work area:", err);
     } finally {
       setLoading(false);
     }
@@ -205,7 +210,7 @@ export default function WorkAreaPage() {
                   size="sm"
                   variant="ghost"
                   onClick={() => {
-                    setDate(area.date);
+                    setDate(area.date.slice(0, 10));
                     setAreaLabel(area.areaLabel);
                   }}
                   className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 h-7 px-2"

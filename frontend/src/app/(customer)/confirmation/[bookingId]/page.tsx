@@ -21,14 +21,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { bookingService } from "@/services/booking.service";
-import { MockBooking, MOCK_TRADER } from "@/lib/mock-data";
+import { bookingService, BookingRecord } from "@/services/booking.service";
 
 export default function BookingConfirmationPage() {
   const params = useParams();
   const bookingId = params.bookingId as string;
 
-  const [booking, setBooking] = useState<MockBooking | null>(null);
+  const [booking, setBooking] = useState<BookingRecord | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,23 +36,7 @@ export default function BookingConfirmationPage() {
         const data = await bookingService.getById(bookingId);
         setBooking(data);
       } catch (err) {
-        // Fallback demo object
-        setBooking({
-          id: bookingId,
-          traderId: MOCK_TRADER.id,
-          customer: {
-            id: "cust-demo",
-            name: "Sarah Jenkins",
-            phone: "+44 7911 123456",
-            email: "sarah@example.com",
-          },
-          channel: "WEBCHAT",
-          status: "CONFIRMED",
-          scheduledStart: "2026-08-24T10:00:00.000Z",
-          scheduledEnd: "2026-08-24T11:30:00.000Z",
-          flatFeeCents: 500,
-          createdAt: new Date().toISOString(),
-        });
+        console.error("Error fetching booking confirmation:", err);
       } finally {
         setLoading(false);
       }
@@ -92,18 +75,18 @@ export default function BookingConfirmationPage() {
             <div className="flex items-center justify-between pb-6 border-b border-slate-100">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white font-extrabold text-base font-outfit shadow-sm">
-                  AC
+                  TS
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-slate-900 text-base font-outfit">Alex Carter</h3>
+                    <h3 className="font-bold text-slate-900 text-base font-outfit">Verified Specialist</h3>
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <p className="text-xs text-slate-500">Certified Plumbing & Heating Specialist</p>
+                  <p className="text-xs text-slate-500">TradeSlot Certified Professional</p>
                 </div>
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-bold text-xs">
-                CONFIRMED
+                {booking.status}
               </Badge>
             </div>
 
@@ -146,11 +129,11 @@ export default function BookingConfirmationPage() {
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
               <div className="flex justify-between text-slate-600">
                 <span>Customer Name:</span>
-                <span className="font-semibold text-slate-900">{booking.customer.name}</span>
+                <span className="font-semibold text-slate-900">{booking.customer?.name}</span>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Contact Phone:</span>
-                <span className="font-semibold text-slate-900">{booking.customer.phone || "Provided"}</span>
+                <span>Contact:</span>
+                <span className="font-semibold text-slate-900">{booking.customer?.phone || booking.customer?.email || "Provided"}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Total Charge:</span>
@@ -168,7 +151,7 @@ export default function BookingConfirmationPage() {
                 <MessageSquare className="w-4 h-4 text-emerald-600" /> Multi-Channel Confirmation Sent
               </div>
               <p className="text-slate-600 text-[11px]">
-                An automated confirmation message was delivered to <strong className="text-slate-900">{booking.customer.phone || "your number"}</strong> via the WhatsApp booking pipeline.
+                An automated confirmation message was delivered to <strong className="text-slate-900">{booking.customer?.phone || "your contact"}</strong> via the TradeSlot booking pipeline.
               </p>
             </div>
 

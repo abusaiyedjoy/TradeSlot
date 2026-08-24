@@ -10,6 +10,20 @@ import { traderRepository } from "./trader.repository";
 const router = Router();
 
 /**
+ * GET /api/traders/public
+ * Returns list of registered traders with their active work areas and businesses
+ * for customer search, directory, and booking intake.
+ */
+router.get("/public", async (_req, res, next) => {
+  try {
+    const traders = await traderRepository.listPublic();
+    return sendSuccess(res, traders);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * GET /api/traders/me
  * Returns the authenticated trader's profile (password hash stripped).
  */
@@ -65,6 +79,21 @@ router.get("/work-area", requireAuth, async (req: AuthenticatedRequest, res, nex
     }
     const workArea = await workAreaService.getWorkArea(req.traderId!, date);
     return sendSuccess(res, workArea);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/traders/work-areas
+ * Retrieve ALL configured work areas for the authenticated trader.
+ * Used by the frontend dashboard and work-area management page to show
+ * the full list of upcoming operational zones.
+ */
+router.get("/work-areas", requireAuth, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const workAreas = await workAreaService.listWorkAreas(req.traderId!);
+    return sendSuccess(res, workAreas);
   } catch (err) {
     next(err);
   }

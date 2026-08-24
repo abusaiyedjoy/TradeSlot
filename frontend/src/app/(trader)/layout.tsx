@@ -19,7 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/auth.service";
-import { MOCK_TRADER } from "@/lib/mock-data";
 
 interface NavItem {
   title: string;
@@ -55,11 +54,23 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [trader, setTrader] = useState(MOCK_TRADER);
+  const [trader, setTrader] = useState({
+    name: "Alex Carter",
+    businessName: "Carter Plumbing & Heating Ltd",
+    stripeAccountId: null as string | null,
+    onboardingComplete: false,
+  });
 
   useEffect(() => {
     const stored = authService.getStoredTrader();
-    if (stored) setTrader(stored);
+    if (stored) {
+      setTrader({
+        name: stored.name || "Alex Carter",
+        businessName: stored.businessName || "Carter Plumbing & Heating Ltd",
+        stripeAccountId: stored.stripeAccountId || null,
+        onboardingComplete: !!stored.stripeAccountId,
+      });
+    }
   }, []);
 
   const handleLogout = () => {
@@ -77,7 +88,7 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
         />
       )}
 
-      {/* Sidebar Navigation (Clean White Theme) */}
+      {/* Sidebar Navigation */}
       <aside
         className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -124,7 +135,7 @@ export default function TraderLayout({ children }: { children: React.ReactNode }
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-amber-700 font-semibold">
-                  <AlertTriangle className="w-3 h-3 text-amber-600" /> Incomplete
+                  <AlertTriangle className="w-3 h-3 text-amber-600" /> Pending
                 </span>
               )}
             </div>

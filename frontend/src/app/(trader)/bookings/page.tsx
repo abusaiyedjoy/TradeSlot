@@ -18,11 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { bookingService } from "@/services/booking.service";
-import { MockBooking, BookingStatus, BookingChannel } from "@/lib/mock-data";
+import { bookingService, BookingRecord } from "@/services/booking.service";
 
 export default function BookingsListPage() {
-  const [bookings, setBookings] = useState<MockBooking[]>([]);
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -33,7 +32,9 @@ export default function BookingsListPage() {
     async function fetchBookings() {
       try {
         const data = await bookingService.listForTrader();
-        setBookings(data);
+        setBookings(data || []);
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
       }
@@ -46,6 +47,8 @@ export default function BookingsListPage() {
     try {
       const updated = await bookingService.confirm(id);
       setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
+    } catch (err) {
+      console.error("Error confirming booking:", err);
     } finally {
       setActionLoading(null);
     }
@@ -57,6 +60,8 @@ export default function BookingsListPage() {
     try {
       const updated = await bookingService.cancel(id);
       setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
+    } catch (err) {
+      console.error("Error cancelling booking:", err);
     } finally {
       setActionLoading(null);
     }
@@ -64,10 +69,13 @@ export default function BookingsListPage() {
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
+      const name = b.customer?.name?.toLowerCase() || "";
+      const phone = b.customer?.phone || "";
+      const email = b.customer?.email?.toLowerCase() || "";
+      const q = searchQuery.toLowerCase();
+
       const matchesSearch =
-        b.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (b.customer.phone && b.customer.phone.includes(searchQuery)) ||
-        (b.customer.email && b.customer.email.toLowerCase().includes(searchQuery.toLowerCase()));
+        name.includes(q) || phone.includes(q) || email.includes(q);
 
       const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
       const matchesChannel = channelFilter === "ALL" || b.channel === channelFilter;
@@ -161,7 +169,7 @@ export default function BookingsListPage() {
               {filteredBookings.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
-                    No bookings found matching your search and filter criteria.
+                    {loading ? "Loading bookings..." : "No bookings found matching your search and filter criteria."}
                   </td>
                 </tr>
               ) : (
@@ -169,9 +177,9 @@ export default function BookingsListPage() {
                   <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                     {/* Customer */}
                     <td className="py-4 pl-6">
-                      <div className="font-bold text-slate-900 text-xs font-outfit">{b.customer.name}</div>
+                      <div className="font-bold text-slate-900 text-xs font-outfit">{b.customer?.name}</div>
                       <div className="text-[11px] text-slate-400 mt-0.5">
-                        {b.customer.phone || b.customer.email || "Direct Booking"}
+                        {b.customer?.phone || b.customer?.email || "Direct Booking"}
                       </div>
                     </td>
 

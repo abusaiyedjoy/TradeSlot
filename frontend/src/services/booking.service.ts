@@ -1,10 +1,9 @@
 /**
  * booking.service.ts
- * CRUD operations for bookings.
- * Mock data active — swap commented API calls when backend is connected.
+ * CRUD operations for bookings via the TradeSlot backend API.
+ * Auth token is automatically attached by the apiClient request interceptor.
  */
 import { apiClient } from "@/lib/api-client";
-import { MOCK_BOOKINGS, MockBooking } from "@/lib/mock-data";
 
 export interface CreateBookingPayload {
   traderId: string;
@@ -15,73 +14,61 @@ export interface CreateBookingPayload {
   durationMinutes?: number;
 }
 
+// Shape returned by the backend (Prisma Booking with customer + payment included)
+export interface BookingRecord {
+  id: string;
+  traderId: string;
+  customer: {
+    id: string;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+  };
+  channel: "WHATSAPP" | "WEBCHAT";
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  scheduledStart: string;
+  scheduledEnd: string;
+  flatFeeCents: number;
+  createdAt: string;
+  payment?: {
+    id: string;
+    bookingId: string;
+    stripePaymentIntentId: string;
+    amountCents: number;
+    applicationFeeCents: number;
+    status: string;
+    createdAt: string;
+  } | null;
+}
+
 export const bookingService = {
-  async listForTrader(): Promise<MockBooking[]> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 500));
-    return MOCK_BOOKINGS;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.get("/bookings");
-    // return data.data;
+  /** GET /api/bookings — List all bookings for the authenticated trader */
+  async listForTrader(): Promise<BookingRecord[]> {
+    const { data } = await apiClient.get("/bookings");
+    return data.data;
   },
 
-  async getById(id: string): Promise<MockBooking> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 300));
-    const booking = MOCK_BOOKINGS.find((b) => b.id === id);
-    if (!booking) throw new Error("Booking not found");
-    return booking;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.get(`/bookings/${id}`);
-    // return data.data;
+  /** GET /api/bookings/:id — Get a single booking by ID */
+  async getById(id: string): Promise<BookingRecord> {
+    const { data } = await apiClient.get(`/bookings/${id}`);
+    return data.data;
   },
 
-  async create(payload: CreateBookingPayload): Promise<MockBooking> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 800));
-    const start = new Date(payload.requestedStart);
-    const end = new Date(start.getTime() + 90 * 60 * 1000); // 60 min + 30 buffer
-    const newBooking: MockBooking = {
-      id: `bk-${Date.now()}`,
-      traderId: payload.traderId,
-      customer: {
-        id: `cust-${Date.now()}`,
-        name: payload.customerName,
-        phone: payload.customerPhone,
-        email: payload.customerEmail,
-      },
-      channel: "WEBCHAT",
-      status: "CONFIRMED",
-      scheduledStart: start.toISOString(),
-      scheduledEnd: end.toISOString(),
-      flatFeeCents: 500,
-      createdAt: new Date().toISOString(),
-    };
-    return newBooking;
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.post("/bookings", payload);
-    // return data.data;
+  /** POST /api/bookings — Create a new booking (web booking flow) */
+  async create(payload: CreateBookingPayload): Promise<BookingRecord> {
+    const { data } = await apiClient.post("/bookings", payload);
+    return data.data;
   },
 
-  async confirm(id: string): Promise<MockBooking> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 400));
-    const booking = MOCK_BOOKINGS.find((b) => b.id === id);
-    if (!booking) throw new Error("Booking not found");
-    return { ...booking, status: "CONFIRMED" };
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.patch(`/bookings/${id}/confirm`);
-    // return data.data;
+  /** PATCH /api/bookings/:id/confirm — Confirm a pending booking */
+  async confirm(id: string): Promise<BookingRecord> {
+    const { data } = await apiClient.patch(`/bookings/${id}/confirm`);
+    return data.data;
   },
 
-  async cancel(id: string): Promise<MockBooking> {
-    // ── MOCK ──────────────────────────────────────────────────────────────
-    await new Promise((r) => setTimeout(r, 400));
-    const booking = MOCK_BOOKINGS.find((b) => b.id === id);
-    if (!booking) throw new Error("Booking not found");
-    return { ...booking, status: "CANCELLED" };
-    // ── TODO: Uncomment when connecting to backend ────────────────────────
-    // const { data } = await apiClient.patch(`/bookings/${id}/cancel`);
-    // return data.data;
+  /** PATCH /api/bookings/:id/cancel — Cancel a booking */
+  async cancel(id: string): Promise<BookingRecord> {
+    const { data } = await apiClient.patch(`/bookings/${id}/cancel`);
+    return data.data;
   },
 };
