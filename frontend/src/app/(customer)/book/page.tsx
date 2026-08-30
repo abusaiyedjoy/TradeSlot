@@ -29,7 +29,6 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { bookingService } from "@/services/booking.service";
 import { traderService, PublicTraderRecord } from "@/services/trader.service";
-import { MOCK_TRADERS, MockTrader } from "@/features/trader/traders-mock";
 
 const TIME_SLOTS = [
   "08:30", "10:00", "11:30", "13:30", "15:00", "16:30"
@@ -41,8 +40,9 @@ function CustomerBookContent() {
   const preSelectedTraderId = searchParams.get("traderId");
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [tradersList, setTradersList] = useState<MockTrader[]>(MOCK_TRADERS);
-  const [selectedTrader, setSelectedTrader] = useState<MockTrader>(MOCK_TRADERS[0]);
+  const [tradersList, setTradersList] = useState<PublicTraderRecord[]>([]);
+  const [selectedTrader, setSelectedTrader] = useState<PublicTraderRecord | null>(null);
+  const [loadingTraders, setLoadingTraders] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("10:00");
   const [customerName, setCustomerName] = useState("");
@@ -55,36 +55,23 @@ function CustomerBookContent() {
     async function loadPublicTraders() {
       try {
         const publicTraders = await traderService.listPublicTraders();
+        setTradersList(publicTraders || []);
         if (publicTraders && publicTraders.length > 0) {
-          // Merge real registered traders from database with visual directory metadata
-          const merged: MockTrader[] = publicTraders.map((pt: PublicTraderRecord, idx: number) => {
-            const fallback = MOCK_TRADERS[idx % MOCK_TRADERS.length];
-            return {
-              id: pt.id,
-              name: pt.name,
-              category: fallback.category || "Plumber",
-              rating: fallback.rating || 4.9,
-              reviewsCount: fallback.reviewsCount || 120,
-              hourlyRate: fallback.hourlyRate || 65,
-              avatar: fallback.avatar,
-              verified: true,
-              workAreas: pt.workAreas?.map(w => w.areaLabel) || fallback.workAreas,
-              skills: fallback.skills,
-              bio: fallback.bio,
-            };
-          });
-          setTradersList(merged);
-
           if (preSelectedTraderId) {
-            const found = merged.find(t => t.id === preSelectedTraderId);
-            if (found) setSelectedTrader(found);
-            else setSelectedTrader(merged[0]);
+            const found = publicTraders.find((t) => t.id === preSelectedTraderId);
+            if (found) {
+              setSelectedTrader(found);
+            } else {
+              setSelectedTrader(publicTraders[0]);
+            }
           } else {
-            setSelectedTrader(merged[0]);
+            setSelectedTrader(publicTraders[0]);
           }
         }
       } catch (err) {
-        console.error("Error loading public traders:", err);
+        console.error("Error loading public traders from backend API:", err);
+      } finally {
+        setLoadingTraders(false);
       }
     }
     loadPublicTraders();
@@ -92,6 +79,10 @@ function CustomerBookContent() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedTrader) {
+      setError("Please select a trader first.");
+      return;
+    }
     if (!customerName || !customerPhone) {
       setError("Please fill in your name and phone number.");
       return;
@@ -113,7 +104,7 @@ function CustomerBookContent() {
 
       router.push(`/confirmation/${booking.id}`);
     } catch (err: any) {
-      setError(err.message || "Could not complete booking. Slot may conflict with another booking.");
+      setError(err.message || "Could not complete booking. Slot may conflict with another booking or trader may not have active work area on this date.");
     } finally {
       setIsSubmitting(false);
     }
@@ -148,48 +139,69 @@ function CustomerBookContent() {
         <div className="space-y-6 animate-fade-in">
           <div>
             <h2 className="text-2xl font-extrabold text-slate-900 font-outfit">Choose a Verified Trader</h2>
-            <p className="text-sm text-slate-600 mt-1">Select a licensed specialist for your job.</p>
+            <p className="text-sm text-slate-600 mt-1">Select a licensed specialist from our active directory.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {tradersList.map((t) => (
-              <div
-                key={t.id}
-                onClick={() => setSelectedTrader(t)}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                  selectedTrader.id === t.id
-                    ? "bg-orange-50/80 border-orange-500 shadow-sm"
-                    : "bg-white border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={t.avatar}
-                    alt={t.name}
-                    className="w-12 h-12 rounded-2xl object-cover ring-2 ring-slate-100 shadow-sm"
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-bold text-slate-900 text-sm font-outfit">{t.name}</h4>
-                      {t.verified && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      )}
+          {loadingTraders ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="p-4 rounded-2xl border border-slate-200 bg-white animate-pulse space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-200" />
+                    <div className="space-y-1.5 flex-1">
+                      <div className="h-4 bg-slate-200 rounded w-24" />
+                      <div className="h-3 bg-slate-200 rounded w-16" />
                     </div>
-                    <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-[10px] px-2 py-0 mt-0.5">
-                      {t.category}
-                    </Badge>
-                    <p className="text-xs text-orange-600 font-bold mt-1">
-                      £{t.hourlyRate}/hr · ★ {t.rating} ({t.reviewsCount})
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : tradersList.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 text-xs">
+              No registered traders found. Please check back shortly.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {tradersList.map((t) => (
+                <div
+                  key={t.id}
+                  onClick={() => setSelectedTrader(t)}
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                    selectedTrader?.id === t.id
+                      ? "bg-orange-50/80 border-orange-500 shadow-sm"
+                      : "bg-white border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="w-12 h-12 rounded-2xl object-cover ring-2 ring-slate-100 shadow-sm"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-bold text-slate-900 text-sm font-outfit">{t.name}</h4>
+                        {t.verified && (
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        )}
+                      </div>
+                      <Badge className="bg-slate-100 text-slate-700 border-slate-200 text-[10px] px-2 py-0 mt-0.5">
+                        {t.category}
+                      </Badge>
+                      <p className="text-xs text-orange-600 font-bold mt-1">
+                        £{t.hourlyRate}/hr · ★ {t.rating} ({t.reviewsCount})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-end pt-4">
             <Button
+              disabled={!selectedTrader}
               onClick={() => setStep(2)}
               className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2.5 px-6 rounded-xl shadow-sm shadow-orange-500/20 gap-2"
             >
@@ -200,7 +212,7 @@ function CustomerBookContent() {
       )}
 
       {/* STEP 2: Date & Slot Picker */}
-      {step === 2 && (
+      {step === 2 && selectedTrader && (
         <div className="space-y-6 animate-fade-in">
           <div className="flex items-center justify-between">
             <div>
@@ -234,6 +246,14 @@ function CustomerBookContent() {
                 />
                 <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
+              {selectedTrader.workAreas && selectedTrader.workAreas.length > 0 && (
+                <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-slate-400" />
+                  <span>
+                    Configured operational zones: {selectedTrader.workAreas.map((w) => w.areaLabel).join(" | ")}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div>
@@ -286,7 +306,7 @@ function CustomerBookContent() {
       )}
 
       {/* STEP 3: Customer Details & Confirmation */}
-      {step === 3 && (
+      {step === 3 && selectedTrader && (
         <form onSubmit={handleBookingSubmit} className="space-y-6 animate-fade-in">
           <div>
             <h2 className="text-2xl font-extrabold text-slate-900 font-outfit">Your Details & Payment</h2>

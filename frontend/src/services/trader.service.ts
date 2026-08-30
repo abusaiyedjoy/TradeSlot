@@ -17,9 +17,18 @@ export interface PublicTraderRecord {
   id: string;
   name: string;
   email: string;
+  category: string;
+  hourlyRate: number;
+  rating: number;
+  reviewsCount: number;
+  avatar: string;
+  bio: string;
+  skills: string[];
+  verified: boolean;
   stripeAccountId: string | null;
   business?: { id: string; name: string };
   workAreas?: { date: string; areaLabel: string }[];
+  createdAt?: string;
 }
 
 export interface WorkAreaRecord {
@@ -44,6 +53,16 @@ export const traderService = {
       return data.data || [];
     } catch {
       return [];
+    }
+  },
+
+  /** GET /api/traders/:id/public — Get public trader details by ID */
+  async getPublicTrader(id: string): Promise<PublicTraderRecord | null> {
+    try {
+      const { data } = await apiClient.get(`/traders/${id}/public`);
+      return data.data ?? null;
+    } catch {
+      return null;
     }
   },
 

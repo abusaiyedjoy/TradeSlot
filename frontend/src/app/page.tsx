@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { MOCK_TRADERS, MockTrader } from "@/features/trader/traders-mock";
+import { traderService, PublicTraderRecord } from "@/services/trader.service";
 
 const POPULAR_SERVICES = [
   { name: "Plumber", icon: "🔧", count: "12 local experts", query: "Plumber" },
@@ -61,6 +61,22 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState("2026-08-24");
   const [selectedTime, setSelectedTime] = useState("10:00");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [featuredTraders, setFeaturedTraders] = useState<PublicTraderRecord[]>([]);
+  const [loadingTraders, setLoadingTraders] = useState(true);
+
+  useEffect(() => {
+    async function loadFeaturedTraders() {
+      try {
+        const traders = await traderService.listPublicTraders();
+        setFeaturedTraders(traders || []);
+      } catch (err) {
+        console.error("Error loading featured traders from backend API:", err);
+      } finally {
+        setLoadingTraders(false);
+      }
+    }
+    loadFeaturedTraders();
+  }, []);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,64 +240,86 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {MOCK_TRADERS.slice(0, 3).map((trader) => (
-                <div
-                  key={trader.id}
-                  className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm card-lift flex flex-col justify-between space-y-4"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={trader.avatar}
-                          alt={trader.name}
-                          className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white shadow-sm"
-                        />
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <h3 className="font-bold text-slate-900 text-sm font-outfit">{trader.name}</h3>
-                            {trader.verified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />}
+            {loadingTraders ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="bg-slate-50 rounded-2xl p-6 border border-slate-200 animate-pulse space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-200" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 bg-slate-200 rounded w-24" />
+                        <div className="h-3 bg-slate-200 rounded w-16" />
+                      </div>
+                    </div>
+                    <div className="h-10 bg-slate-200 rounded" />
+                    <div className="h-8 bg-slate-200 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {featuredTraders.slice(0, 3).map((trader) => (
+                  <div
+                    key={trader.id}
+                    className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm card-lift flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={trader.avatar}
+                            alt={trader.name}
+                            className="w-12 h-12 rounded-2xl object-cover ring-2 ring-white shadow-sm"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <h3 className="font-bold text-slate-900 text-sm font-outfit">{trader.name}</h3>
+                              {trader.verified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />}
+                            </div>
+                            <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-[10px] px-2 py-0">
+                              {trader.category}
+                            </Badge>
                           </div>
-                          <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-[10px] px-2 py-0">
-                            {trader.category}
-                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-extrabold text-slate-900 text-base">£{trader.hourlyRate}</span>
+                          <span className="text-[10px] text-slate-400 block">/hr</span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-extrabold text-slate-900 text-base">£{trader.hourlyRate}</span>
-                        <span className="text-[10px] text-slate-400 block">/hr</span>
+
+                      <div className="flex items-center gap-2 text-xs text-slate-600">
+                        <div className="flex items-center gap-1 text-amber-500 font-bold">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          {trader.rating}
+                        </div>
+                        <span className="text-slate-300">•</span>
+                        <span>{trader.reviewsCount} reviews</span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 line-clamp-2">
+                        {trader.bio}
+                      </p>
+
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1 pt-1">
+                        <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                        <span className="truncate">
+                          {trader.workAreas && trader.workAreas.length > 0
+                            ? trader.workAreas.map((w) => w.areaLabel).join(", ")
+                            : "London & Greater London"}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-slate-600">
-                      <div className="flex items-center gap-1 text-amber-500 font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        {trader.rating}
-                      </div>
-                      <span className="text-slate-300">•</span>
-                      <span>{trader.reviewsCount} reviews</span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 line-clamp-2">
-                      {trader.bio}
-                    </p>
-
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1 pt-1">
-                      <MapPin className="w-3 h-3 text-slate-400" />
-                      <span>{trader.workAreas.join(", ")}</span>
-                    </div>
+                    <Link href={`/book?traderId=${trader.id}`} className="w-full block pt-2">
+                      <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs h-9 rounded-xl shadow-sm shadow-orange-500/20 justify-center gap-1">
+                        Book Slot <ArrowRight className="w-3 h-3" />
+                      </Button>
+                    </Link>
                   </div>
-
-                  <Link href={`/book?traderId=${trader.id}`} className="w-full block pt-2">
-                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs h-9 rounded-xl shadow-sm shadow-orange-500/20 justify-center gap-1">
-                      Book Slot <ArrowRight className="w-3 h-3" />
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

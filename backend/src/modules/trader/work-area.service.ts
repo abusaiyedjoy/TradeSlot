@@ -1,6 +1,6 @@
 import { prisma } from "../../db/prisma-client";
 import { AppError } from "../../common/errors/AppError";
-import { startOfDay } from "../../common/utils/date.util";
+import { startOfDay, endOfDay } from "../../common/utils/date.util";
 
 export const workAreaService = {
     // One-off daily setting for MVP — not a recurring weekly pattern
@@ -9,24 +9,34 @@ export const workAreaService = {
             throw new AppError("areaLabel is required", 400);
         }
 
-        const day = startOfDay(new Date(date));
+        const start = startOfDay(new Date(date));
+        const end = endOfDay(new Date(date));
         const existing = await prisma.workArea.findFirst({
-            where: { traderId, date: day },
+            where: {
+                traderId,
+                date: { gte: start, lte: end },
+            },
         });
 
         if (existing) {
             return prisma.workArea.update({
                 where: { id: existing.id },
-                data: { areaLabel },
+                data: { areaLabel, date: start },
             });
         }
 
-        return prisma.workArea.create({ data: { traderId, date: day, areaLabel } });
+        return prisma.workArea.create({ data: { traderId, date: start, areaLabel } });
     },
 
     async getWorkArea(traderId: string, date: string) {
-        const day = startOfDay(new Date(date));
-        return prisma.workArea.findFirst({ where: { traderId, date: day } });
+        const start = startOfDay(new Date(date));
+        const end = endOfDay(new Date(date));
+        return prisma.workArea.findFirst({
+            where: {
+                traderId,
+                date: { gte: start, lte: end },
+            },
+        });
     },
 
     /**

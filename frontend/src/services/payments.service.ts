@@ -13,14 +13,6 @@ export interface PayoutSummary {
   bookingCount: number;
 }
 
-// Mock payout summary data — no backend analytics endpoint in MVP
-const MOCK_PAYOUT_SUMMARY: PayoutSummary[] = [
-  { month: "Aug 2026", grossRevenueCents: 33000, platformFeeCents: 3000, netPayoutCents: 30000, bookingCount: 6 },
-  { month: "Jul 2026", grossRevenueCents: 55000, platformFeeCents: 5000, netPayoutCents: 50000, bookingCount: 10 },
-  { month: "Jun 2026", grossRevenueCents: 44000, platformFeeCents: 4000, netPayoutCents: 40000, bookingCount: 8 },
-  { month: "May 2026", grossRevenueCents: 27500, platformFeeCents: 2500, netPayoutCents: 25000, bookingCount: 5 },
-];
-
 export const paymentsService = {
   /**
    * POST /api/payments/connect/onboard
@@ -48,11 +40,15 @@ export const paymentsService = {
   },
 
   /**
-   * Returns monthly payout summary.
-   * NOTE: No backend analytics endpoint exists in MVP scope — returns
-   * static demo data. Replace when the analytics module is built.
+   * GET /api/payments/summary
+   * Returns monthly payout summary computed directly from database payment records.
    */
   async getPayoutSummary(): Promise<PayoutSummary[]> {
-    return MOCK_PAYOUT_SUMMARY;
+    try {
+      const { data } = await apiClient.get("/payments/summary");
+      return data.data || [];
+    } catch {
+      return [];
+    }
   },
 };

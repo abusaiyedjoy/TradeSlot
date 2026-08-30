@@ -24,6 +24,22 @@ router.get("/public", async (_req, res, next) => {
 });
 
 /**
+ * GET /api/traders/:id/public
+ * Returns single public trader profile by ID.
+ */
+router.get("/:id/public", async (req, res, next) => {
+  try {
+    const trader = await traderRepository.getPublicById(req.params.id);
+    if (!trader) {
+      return res.status(404).json({ success: false, message: "Trader not found" });
+    }
+    return sendSuccess(res, trader);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * GET /api/traders/me
  * Returns the authenticated trader's profile (password hash stripped).
  */

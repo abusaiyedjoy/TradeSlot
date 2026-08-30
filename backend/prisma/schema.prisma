@@ -23,6 +23,14 @@ model Trader {
   name            String
   email           String     @unique
   passwordHash    String
+  category        String     @default("Plumber")
+  hourlyRate      Int        @default(65)
+  rating          Float      @default(4.9)
+  reviewsCount    Int        @default(120)
+  avatar          String     @default("https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&q=80&w=120&h=120")
+  bio             String     @default("Certified specialist with verified credentials and guaranteed satisfaction.")
+  skills          String[]   @default([])
+  verified        Boolean    @default(true)
   stripeAccountId String?
   workAreas       WorkArea[]
   bookings        Booking[]

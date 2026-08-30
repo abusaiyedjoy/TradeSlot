@@ -9,15 +9,13 @@ export const bookingRepository = {
    * duplicate customer rows for repeat bookings.
    */
   async findCustomerByPhoneOrEmail(phone?: string, email?: string) {
-    if (!phone && !email) return null;
+    const conditions: Array<{ phone?: string; email?: string }> = [];
+    if (phone && phone.trim()) conditions.push({ phone: phone.trim() });
+    if (email && email.trim()) conditions.push({ email: email.trim() });
+    if (conditions.length === 0) return null;
 
     return prisma.customer.findFirst({
-      where: {
-        OR: [
-          phone ? { phone } : undefined,
-          email ? { email } : undefined,
-        ].filter(Boolean) as any[],
-      },
+      where: { OR: conditions },
     });
   },
 
@@ -26,9 +24,17 @@ export const bookingRepository = {
    * new one. Keeps customer records clean across channels.
    */
   async upsertCustomer(data: { name: string; phone?: string; email?: string }) {
-    const existing = await this.findCustomerByPhoneOrEmail(data.phone, data.email);
+    const phone = data.phone?.trim() || null;
+    const email = data.email?.trim() || null;
+    const existing = await this.findCustomerByPhoneOrEmail(phone ?? undefined, email ?? undefined);
     if (existing) return existing;
-    return prisma.customer.create({ data });
+    return prisma.customer.create({
+      data: {
+        name: data.name.trim(),
+        phone,
+        email,
+      },
+    });
   },
 
   // ── Booking helpers ──────────────────────────────────────────────────────
@@ -60,7 +66,25 @@ export const bookingRepository = {
     scheduledEnd: Date;
     flatFeeCents: number;
   }) {
-    return prisma.booking.create({ data });
+    return prisma.booking.create({
+      data,
+      include: {
+        customer: true,
+        payment: true,
+        trader: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            category: true,
+            hourlyRate: true,
+            rating: true,
+            reviewsCount: true,
+            avatar: true,
+          },
+        },
+      },
+    });
   },
 
   async findById(id: string) {
